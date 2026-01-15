@@ -39,20 +39,31 @@
         </a>
     </li>
 
-    <li class="nav-item {{ request()->routeIs('admin.items.*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('admin.items.index') }}">
-            <i class="fas fa-fw fa-box"></i>
-            <span>Aset Tetap</span>
-        </a>
-    </li>
+    @php
+    // Cek apakah sedang aktif di salah satu menu anak
+    $isDataBarangActive = request()->routeIs('admin.items.*') || request()->routeIs('admin.consumables.*');
+    @endphp
 
-    <li class="nav-item {{ request()->routeIs('admin.consumables.*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('admin.consumables.index') }}">
-            <i class="fas fa-fw fa-recycle"></i>
-            <span>Barang Habis Pakai</span>
+    <li class="nav-item {{ $isDataBarangActive ? 'active' : '' }}">
+        <a class="nav-link {{ $isDataBarangActive ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseDataBarang"
+            aria-expanded="{{ $isDataBarangActive ? 'true' : 'false' }}" aria-controls="collapseDataBarang">
+            <i class="fas fa-fw fa-boxes"></i>
+            <span>Data Barang</span>
         </a>
-    </li>
+        <div id="collapseDataBarang" class="collapse {{ $isDataBarangActive ? 'show' : '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Pilih Jenis:</h6>
 
+                <a class="collapse-item {{ request()->routeIs('admin.items.*') ? 'active' : '' }}" href="{{ route('admin.items.index') }}">
+                    <i class="fas fa-fw fa-box mr-2"></i> Aset Tetap
+                </a>
+
+                <a class="collapse-item {{ request()->routeIs('admin.consumables.*') ? 'active' : '' }}" href="{{ route('admin.consumables.index') }}">
+                    <i class="fas fa-fw fa-recycle mr-2"></i> Habis Pakai
+                </a>
+            </div>
+        </div>
+    </li>
     <li class="nav-item {{ Request::is('admin/labels*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('admin.labels.index') }}">
             <i class="fas fa-fw fa-print"></i>

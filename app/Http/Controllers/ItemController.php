@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Category;
 use App\Models\Room;
-// PENTING: Tambahkan Model ItemMutation agar riwayat tersimpan
-use App\Models\ItemMutation;
+use App\Models\ItemMutation; // Model Mutasi
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,31 +13,40 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ItemController extends Controller
 {
-    // Tampilkan Daftar Barang Tetap
+    // Tampilkan Daftar Barang Tetap (LENGKAP DENGAN FILTER & TOTAL)
     public function index(Request $request)
     {
-        // [BARU] Ambil Data Ruangan untuk Dropdown di Modal Mutasi
-        $rooms = Room::all();
+        // 1. Siapkan Query Dasar
+        $query = Item::with(['category', 'room']); // Load relasi agar ringan
 
-        // 1. KUNCI UTAMA: Filter hanya Barang Tetap (is_consumable = 0)
-        $query = Item::where('is_consumable', 0)->with(['category', 'room']);
-
-        // 2. Logika Pencarian
-        if ($request->has('search') && $request->search != '') {
-            $search = $request->search;
-
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('code', 'LIKE', "%{$search}%")
-                    ->orWhere('barcode', 'LIKE', "%{$search}%");
-            });
+        // 2. Cek Filter Pencarian (Search Bar)
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                ->orWhere('code', 'like', '%' . $request->search . '%');
         }
 
-        // 3. Ambil datanya (Urutkan dari yang terbaru)
-        $items = $query->orderBy('created_at', 'desc')->get();
+        // 3. Cek Filter Kategori (Dropdown)
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
 
-        // [UPDATE] Kirim juga variabel $rooms ke view
-        return view('admin.items.index', compact('items', 'rooms'));
+        // 4. Ambil Data (Pagination)
+        $items = $query->latest()->paginate(10); // Pakai paginate biar halaman tidak berat
+
+        // 5. Hitung Ringkasan (Berdasarkan Filter di atas)
+        // Kita clone query agar tidak mengganggu pagination
+        $allItems = $query->get();
+
+        $totalItem = $allItems->sum('quantity'); // Total Fisik Barang
+
+        $totalHarga = $allItems->sum(function ($item) {
+            return $item->price * $item->quantity; // Rumus: Harga x Jumlah
+        });
+
+        // 6. Ambil Data Kategori untuk Dropdown Filter
+        $categories = Category::all();
+
+        return view('admin.items.index', compact('items', 'totalItem', 'totalHarga', 'categories'));
     }
 
     // Form Tambah Barang
@@ -65,25 +73,25 @@ class ItemController extends Controller
             'category_id' => 'required',
             'room_id' => 'required',
             'unit' => 'required',
+            'quantity' => 'required|integer|min:1', // Pastikan quantity divalidasi
             'image' => 'nullable|image|max:2048',
         ]);
 
         $data = $request->all();
         $data['is_consumable'] = 0; // Set sebagai Barang Tetap
 
-        // 1. Handle Upload Foto
+        // Handle Upload Foto
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('items', 'public');
             $data['image'] = $path;
         }
 
-        // 2. Simpan ke Database
         Item::create($data);
 
         return redirect()->route('admin.items.index')->with('success', 'Barang berhasil ditambahkan!');
     }
 
-    // MENAMPILKAN FORM EDIT
+    // Edit Barang
     public function edit(Item $item)
     {
         $categories = Category::all();
@@ -91,7 +99,7 @@ class ItemController extends Controller
         return view('admin.items.edit', compact('item', 'categories', 'rooms'));
     }
 
-    // PROSES UPDATE DATA
+    // Update Barang
     public function update(Request $request, Item $item)
     {
         $request->validate([
@@ -135,16 +143,14 @@ class ItemController extends Controller
     // Detail & QR Code
     public function show(Item $item)
     {
-        // Generate QR Code untuk Detail
         $qrCode = QrCode::size(200)->generate(route('admin.items.show', $item->id));
         return view('admin.items.show', compact('item', 'qrCode'));
     }
 
     // ==========================================
-    // BAGIAN BARU: FITUR MUTASI (PINDAH RUANGAN)
+    // FITUR MUTASI (PINDAH RUANGAN)
     // ==========================================
 
-    // 1. Proses Pemindahan Barang
     public function mutate(Request $request, $id)
     {
         $request->validate([
@@ -152,13 +158,11 @@ class ItemController extends Controller
         ]);
 
         $item = Item::findOrFail($id);
-
-        // Ambil Data Lama & Baru
         $oldRoomName = $item->room->name ?? 'Belum Ada Ruangan';
         $newRoom = Room::findOrFail($request->room_id);
         $newRoomName = $newRoom->name;
 
-        // 1. Simpan Riwayat Mutasi (Agar bisa dicetak suratnya)
+        // Simpan Riwayat
         $mutation = ItemMutation::create([
             'item_id' => $item->id,
             'origin_room' => $oldRoomName,
@@ -167,14 +171,12 @@ class ItemController extends Controller
             'user_id' => Auth::id(),
         ]);
 
-        // 2. Update Lokasi Barang di Database Utama
+        // Update Lokasi
         $item->update(['room_id' => $request->room_id]);
 
-        // 3. Arahkan ke Halaman Cetak Surat
         return redirect()->route('mutations.print', $mutation->id);
     }
 
-    // 2. Tampilkan Halaman Cetak Surat Mutasi
     public function printMutation($id)
     {
         $mutation = ItemMutation::with(['item', 'user'])->findOrFail($id);

@@ -7,9 +7,12 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 11px;
         }
 
+        /* Font sedikit diperkecil biar muat */
+
+        /* KOP SURAT */
         .header-container {
             display: flex;
             align-items: center;
@@ -52,6 +55,7 @@
             font-style: italic;
         }
 
+        /* TABEL */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -61,8 +65,9 @@
         th,
         td {
             border: 1px solid #000;
-            padding: 6px;
+            padding: 5px;
             text-align: left;
+            vertical-align: middle;
         }
 
         th {
@@ -71,10 +76,38 @@
             font-weight: bold;
         }
 
+        /* FOTO */
+        .img-print {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            display: block;
+            margin: auto;
+        }
+
+        /* UTILITY */
         .text-center {
             text-align: center;
         }
 
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .no-pic {
+            font-size: 9px;
+            color: #888;
+            text-align: center;
+            display: block;
+        }
+
+        /* TANDA TANGAN */
         .ttd-area {
             margin-top: 40px;
             float: right;
@@ -98,11 +131,11 @@
 <body onload="window.print()">
 
     <div class="no-print" style="text-align: right; padding: 10px; background: #f0f0f0; border-bottom: 1px solid #ccc;">
-        <button onclick="window.print()" style="padding: 5px 15px; cursor: pointer;">🖨️ Cetak Laporan</button>
+        <button onclick="window.print()" style="padding: 5px 15px; cursor: pointer; font-weight:bold;">🖨️ Cetak Laporan</button>
     </div>
 
     <div class="header-container">
-        <img src="{{ asset('logo.png') }}" class="logo" alt="Logo">
+        <img src="{{ asset('logo.png') }}" class="logo" alt="Logo" onerror="this.style.display='none'">
         <div class="header-text">
             <h4>PEMERINTAH PROVINSI GORONTALO</h4>
             <h4>DINAS PENDIDIKAN DAN KEBUDAYAAN</h4>
@@ -112,37 +145,73 @@
         </div>
     </div>
 
-    <h3 style="text-align: center; margin-bottom: 5px;">LAPORAN DATA ASET TETAP</h3>
-    <p style="text-align: center; margin-top: 0;">Per Tanggal: {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="margin: 0;">LAPORAN DATA ASET TETAP</h3>
+        <p style="margin: 5px 0;">Kategori: <strong>{{ $selectedCategory ?? 'Semua Kategori' }}</strong></p>
+        <p style="margin: 0;">Per Tanggal: {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
+    </div>
 
     <table>
         <thead>
             <tr>
-                <th width="5%">No</th>
-                <th>Kode</th>
-                <th>Nama Barang</th>
+                <th width="3%">No</th>
+                <th width="6%">Foto</th>
+                <th>Kode & Nama Barang</th>
                 <th>Kategori</th>
                 <th>Lokasi</th>
-                <th>Kondisi</th>
-                <th>Thn Pengadaan</th>
+                <th width="5%">Kondisi</th>
+                <th width="5%">Jml</th>
+                <th>Harga Satuan</th>
+                <th>Total Nilai</th>
             </tr>
         </thead>
         <tbody>
+            @php
+            $grandTotalQty = 0;
+            $grandTotalPrice = 0;
+            @endphp
+
             @foreach($items as $index => $item)
+            @php
+            $subtotal = $item->price * $item->quantity;
+            $grandTotalQty += $item->quantity;
+            $grandTotalPrice += $subtotal;
+            @endphp
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $item->code }}</td>
+
+                <td class="text-center">
+                    @if($item->image)
+                    <img src="{{ asset('storage/' . $item->image) }}" class="img-print" alt="Foto">
+                    @else
+                    <span class="no-pic">-No Pic-</span>
+                    @endif
+                </td>
+
                 <td>
-                    <b>{{ $item->name }}</b>
-                    @if($item->barcode)<br><small>{{ $item->barcode }}</small>@endif
+                    <b>{{ $item->name }}</b><br>
+                    <small style="color:#555">{{ $item->code }}</small>
                 </td>
                 <td>{{ $item->category->name ?? '-' }}</td>
                 <td>{{ $item->room->name ?? '-' }}</td>
                 <td class="text-center">{{ ucfirst($item->condition) }}</td>
-                <td class="text-center">{{ $item->purchase_date ? date('Y', strtotime($item->purchase_date)) : '-' }}</td>
+                <td class="text-center">{{ $item->quantity }} {{ $item->unit }}</td>
+                <td class="text-right">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                <td class="text-right font-bold">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
             </tr>
             @endforeach
         </tbody>
+
+        <tfoot>
+            <tr style="background-color: #f9f9f9;">
+                <td colspan="6" class="text-right font-bold">TOTAL KESELURUHAN</td>
+                <td class="text-center font-bold">{{ $grandTotalQty }} Unit</td>
+                <td></td>
+                <td class="text-right font-bold" style="font-size: 11pt;">
+                    Rp {{ number_format($grandTotalPrice, 0, ',', '.') }}
+                </td>
+            </tr>
+        </tfoot>
     </table>
 
     <div class="ttd-area">

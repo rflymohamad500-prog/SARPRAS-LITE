@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/transaction', [ReportController::class, 'transaction'])->name('reports.transaction');
         Route::get('/reports/borrowing', [ReportController::class, 'borrowing'])->name('reports.borrowing');
 
+
         // Cetak Label
         Route::get('/labels', [LabelController::class, 'index'])->name('labels.index');
         Route::post('/labels/print', [LabelController::class, 'print'])->name('labels.print');
