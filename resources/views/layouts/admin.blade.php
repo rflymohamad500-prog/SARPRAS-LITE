@@ -15,9 +15,203 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.4/css/sb-admin-2.min.css" rel="stylesheet">
 
     @stack('styles')
+
+    <style>
+        /* Transisi Global */
+        body,
+        div,
+        nav,
+        aside,
+        footer,
+        table,
+        tr,
+        td,
+        th,
+        span,
+        a,
+        i,
+        button,
+        input,
+        select,
+        textarea {
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        /* --- MODE GELAP AKTIF --- */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode #wrapper #content-wrapper {
+            background-color: #121212 !important;
+        }
+
+        body.dark-mode #content {
+            background-color: #121212 !important;
+        }
+
+        /* Navbar & Sidebar */
+        body.dark-mode .navbar {
+            background-color: #1e1e1e !important;
+            border-bottom: 1px solid #333 !important;
+        }
+
+        body.dark-mode .navbar .nav-link .text-gray-600 {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .topbar-divider {
+            border-right: 1px solid #444 !important;
+        }
+
+        body.dark-mode ul.sidebar {
+            background-color: #000000 !important;
+            background-image: none !important;
+            border-right: 1px solid #333;
+        }
+
+        body.dark-mode .sidebar-heading {
+            color: #888 !important;
+        }
+
+        body.dark-mode .nav-item .nav-link {
+            color: #ccc !important;
+        }
+
+        body.dark-mode .nav-item.active .nav-link {
+            color: #fff !important;
+            font-weight: bold;
+        }
+
+        body.dark-mode .sidebar-divider {
+            border-top: 1px solid #333 !important;
+        }
+
+        body.dark-mode footer.sticky-footer {
+            background-color: #1e1e1e !important;
+            color: #aaa !important;
+            border-top: 1px solid #333;
+        }
+
+        /* Card & Components */
+        body.dark-mode .card {
+            background-color: #1e1e1e !important;
+            border: 1px solid #333 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .card-header {
+            background-color: #252525 !important;
+            border-bottom: 1px solid #333 !important;
+            color: #fff !important;
+        }
+
+        body.dark-mode .card-header h6 {
+            color: #fff !important;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .custom-select {
+            background-color: #2c2c2c !important;
+            border: 1px solid #444 !important;
+            color: #fff !important;
+        }
+
+        body.dark-mode .form-control:focus {
+            background-color: #333 !important;
+            color: #fff !important;
+            border-color: #4e73df !important;
+        }
+
+        /* Table */
+        body.dark-mode .table {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .table thead th {
+            background-color: #2c2c2c !important;
+            border-color: #444 !important;
+            color: #fff !important;
+        }
+
+        body.dark-mode .table td,
+        body.dark-mode .table th {
+            border-color: #333 !important;
+        }
+
+        /* Dropdown & Modal */
+        body.dark-mode .dropdown-menu,
+        body.dark-mode .modal-content {
+            background-color: #1e1e1e !important;
+            border: 1px solid #444 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .dropdown-item {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .dropdown-item:hover {
+            background-color: #333 !important;
+            color: #fff !important;
+        }
+
+        body.dark-mode .modal-header,
+        body.dark-mode .modal-footer {
+            border-color: #333 !important;
+        }
+
+        body.dark-mode .close {
+            color: #fff !important;
+            text-shadow: none;
+        }
+
+        /* Utility Colors */
+        body.dark-mode .text-gray-800,
+        body.dark-mode .text-dark,
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode h5,
+        body.dark-mode h6 {
+            color: #f1f1f1 !important;
+        }
+
+        body.dark-mode .text-gray-600,
+        body.dark-mode .text-muted {
+            color: #aaa !important;
+        }
+
+        body.dark-mode .list-group-item {
+            background-color: #1e1e1e !important;
+            border-color: #333 !important;
+        }
+
+        /* Tombol Dark Mode di Navbar */
+        .btn-theme-toggle {
+            color: #4e73df;
+            background-color: #f8f9fa;
+            border: 1px solid #e3e6f0;
+        }
+
+        body.dark-mode .btn-theme-toggle {
+            color: #f6c23e;
+            /* Kuning Matahari */
+            background-color: #2c2c2c;
+            border-color: #444;
+        }
+    </style>
 </head>
 
 <body id="page-top">
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
 
     <div id="wrapper">
 
@@ -32,7 +226,15 @@
                     </button>
 
                     <ul class="navbar-nav ml-auto">
+
+                        <li class="nav-item d-flex align-items-center">
+                            <button onclick="toggleDarkModeGlobal()" class="btn btn-sm btn-circle btn-theme-toggle shadow-sm mr-3" title="Ganti Tema">
+                                <i class="fas fa-moon" id="globalThemeIcon"></i>
+                            </button>
+                        </li>
+
                         <div class="topbar-divider d-none d-sm-block"></div>
+
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -122,6 +324,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.4/js/sb-admin-2.min.js"></script>
     @stack('scripts')
+
+    <script>
+        // Cek Ikon saat load
+        const icon = document.getElementById('globalThemeIcon');
+        if (localStorage.getItem('theme') === 'dark') {
+            if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        function toggleDarkModeGlobal() {
+            document.body.classList.toggle('dark-mode');
+            const icon = document.getElementById('globalThemeIcon');
+
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                if (icon) icon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                if (icon) icon.classList.replace('fa-sun', 'fa-moon');
+            }
+        }
+    </script>
 
 </body>
 

@@ -13,7 +13,11 @@ class BorrowingController extends Controller
     // 1. Daftar Peminjaman
     public function index()
     {
-        $borrowings = Borrowing::with(['item.room'])->orderBy('status', 'asc')->latest()->get();
+        $borrowings = Borrowing::with('item')
+            ->orderBy('status', 'asc') // Tampilkan yang 'borrowed' dulu
+            ->orderBy('created_at', 'desc') // Lalu urutkan dari yang terbaru
+            ->paginate(10); // <--- INI PERBAIKANNYA (Jangan pakai get())
+
         return view('admin.borrowings.index', compact('borrowings'));
     }
 
@@ -90,5 +94,21 @@ class BorrowingController extends Controller
         });
 
         return back()->with('success', 'Barang berhasil dikembalikan!');
+    }
+
+
+    // HAPUS MASSAL (BULK DELETE)
+    public function bulkDestroy(Request $request)
+    {
+        // Validasi: Pastikan ada ID yang dikirim
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:borrowings,id',
+        ]);
+
+        // Hapus data yang ID-nya ada dalam daftar centang
+        Borrowing::whereIn('id', $request->ids)->delete();
+
+        return redirect()->back()->with('success', 'Data peminjaman terpilih berhasil dihapus.');
     }
 }

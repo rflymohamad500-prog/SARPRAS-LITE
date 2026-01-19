@@ -1,90 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Login - Sistem Informasi Sarpras</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sarpras Lite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.4/css/sb-admin-2.min.css" rel="stylesheet">
+            /* --- BAGIAN INI YANG MENGATUR GAMBAR BACKGROUND --- */
+            /* Kita pakai teknik tumpuk: Lapisan Biru Transparan + Gambar Sekolah */
+            background: linear-gradient(rgba(10, 50, 100, 0.7), rgba(10, 50, 100, 0.8)),
+            url("{{ asset('img/bg-sekolah.png') }}");
+
+            background-size: cover;
+            /* Agar gambar memenuhi layar */
+            background-position: center;
+            /* Agar fokus gambar di tengah */
+            background-repeat: no-repeat;
+
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            /* Putih agak transparan dikit */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            /* Bayangan lebih tebal */
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            /* Efek blur di belakang kartu */
+        }
+
+        .login-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .login-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .form-control {
+            border-radius: 50px;
+            padding: 20px 25px;
+            background-color: #f0f2f5;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #4e73df;
+            background-color: #fff;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            border-radius: 50px;
+            background-color: #4e73df;
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(78, 115, 223, 0.3);
+        }
+
+        .btn-login:hover {
+            background-color: #2e59d9;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 
-<body class="bg-gradient-primary">
+<body>
 
-    <div class="container">
+    <div class="login-card">
+        <h3 class="login-title">Selamat Datang!</h3>
+        <p class="login-subtitle">Sistem Inventaris Sarana Prasarana</p>
 
-        <div class="row justify-content-center">
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
 
-            <div class="col-xl-10 col-lg-12 col-md-9">
+            <input type="email" name="email" class="form-control" placeholder="Masukkan Alamat Email..." required autofocus>
+            @error('email')
+            <small class="text-danger d-block mb-3 text-left pl-3">{{ $message }}</small>
+            @enderror
 
-                <div class="card o-hidden border-0 shadow-lg my-5">
-                    <div class="card-body p-0">
-                        <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block" style="background: url('https://source.unsplash.com/Kz8nHVg_tGI/600x800'); background-position: center; background-size: cover;"></div>
+            <input type="password" name="password" class="form-control" placeholder="Password" required>
+            @error('password')
+            <small class="text-danger d-block mb-3 text-left pl-3">{{ $message }}</small>
+            @enderror
 
-                            <div class="col-lg-6">
-                                <div class="p-5">
-                                    <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Selamat Datang!</h1>
-                                        <p class="mb-4">Sistem Inventaris Sarana Prasarana</p>
-                                    </div>
-
-                                    <form class="user" method="POST" action="{{ route('login') }}">
-                                        @csrf
-
-                                        <div class="form-group">
-                                            <input type="email" name="email" class="form-control form-control-user"
-                                                id="exampleInputEmail" aria-describedby="emailHelp"
-                                                placeholder="Masukkan Alamat Email..." required autofocus>
-                                            @error('email')
-                                            <small class="text-danger pl-3">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-
-                                        <div class="form-group">
-                                            <input type="password" name="password" class="form-control form-control-user"
-                                                id="exampleInputPassword" placeholder="Password" required>
-                                            @error('password')
-                                            <small class="text-danger pl-3">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-
-                                        <div class="form-group">
-                                            <div class="custom-control custom-checkbox small">
-                                                <input type="checkbox" class="custom-control-input" id="customCheck" name="remember">
-                                                <label class="custom-control-label" for="customCheck">Ingat Saya</label>
-                                            </div>
-                                        </div>
-
-                                        <button type="submit" class="btn btn-primary btn-user btn-block">
-                                            Masuk Aplikasi
-                                        </button>
-                                    </form>
-
-                                    <hr>
-                                    <div class="text-center">
-                                        <a class="small" href="#">Lupa Password? Hubungi Admin.</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="text-left mb-3 pl-2 custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="remember_me" name="remember">
+                <label class="custom-control-label small text-muted" for="remember_me">Ingat Saya</label>
             </div>
 
-        </div>
+            <button type="submit" class="btn btn-login">
+                Masuk Aplikasi
+            </button>
 
+            <div class="mt-4">
+                <a href="#" class="small text-muted">Lupa Password? Hubungi Admin.</a>
+            </div>
+        </form>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/4.1.4/js/sb-admin-2.min.js"></script>
 
 </body>
 

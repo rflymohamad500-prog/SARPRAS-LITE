@@ -3,52 +3,58 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Item;       // Pastikan Model Item ada
-use App\Models\Borrowing;  // Pastikan Model Peminjaman ada
+use App\Models\Item;
+use App\Models\Borrowing;
+use App\Models\Category;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // --- 1. HITUNG DATA UNTUK KARTU ATAS ---
+        // === UPDATED: HANYA MENGHITUNG SESUAI TIPE ===
 
-        // Total Aset (Laptop, Meja, dll - yang is_consumable = 0)
-        $totalAset = Item::where('is_consumable', 0)->count();
-
-        // Total Jenis ATK (Kertas, Spidol, dll - yang is_consumable = 1)
-        $totalATK = Item::where('is_consumable', 1)->count();
-
-        // Barang Sedang Dipinjam (Status belum 'returned')
+        // 1. STATISTIK UTAMA
+        $totalAset      = Item::where('is_consumable', 0)->count(); // Hanya Aset
+        $totalATK       = Item::where('is_consumable', 1)->count(); // Hanya ATK
         $sedangDipinjam = Borrowing::where('status', 'borrowed')->count();
 
-        // Stok Menipis (Kurang dari atau sama dengan 5)
-        $stokKritis = Item::where('quantity', '<=', 5)
-            ->where('quantity', '>', 0) // Jangan hitung yang 0 (biasanya barang rusak/hilang)
+        // 2. STOK KRITIS (Kotak Merah di Atas)
+        // HANYA untuk barang habis pakai (ATK)
+        $stokKritis = Item::where('is_consumable', 1)
+            ->where('quantity', '<=', 5)
+            ->where('quantity', '>', 0)
             ->count();
 
-        // --- 2. AMBIL DATA UNTUK TABEL ---
-
-        // 5 Peminjaman Terakhir (Biar petugas tau siapa yang baru pinjam)
-        $recentBorrowings = Borrowing::with(['item', 'item.room'])
+        // 3. TABEL PEMINJAMAN TERAKHIR
+        $recentBorrowings = Borrowing::with(['item'])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
-        // 5 Barang yang Stoknya Paling Sedikit (Prioritas Belanja)
-        $lowStockItems = Item::where('quantity', '<=', 5)
+        // 4. LIST PERINGATAN STOK MENIPIS (Kotak Merah Kanan)
+        // HANYA untuk barang habis pakai (ATK)
+        $lowStockItems = Item::where('is_consumable', 1) // <--- KUNCI PERBAIKANNYA DI SINI
+            ->where('quantity', '<=', 5)
             ->where('quantity', '>', 0)
             ->orderBy('quantity', 'asc')
             ->take(5)
             ->get();
 
-        // Kirim semua variabel ke View
+        // 5. DATA GRAFIK
+        $categories = Category::withCount('items')->get();
+        $chartLabels = $categories->pluck('name');
+        $chartData   = $categories->pluck('items_count');
+
         return view('admin.dashboard', compact(
             'totalAset',
             'totalATK',
             'sedangDipinjam',
             'stokKritis',
             'recentBorrowings',
-            'lowStockItems'
+            'lowStockItems', // Variabel ini yang dikirim ke view
+            'chartLabels',
+            'chartData'
         ));
     }
 }
